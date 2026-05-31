@@ -1,0 +1,1797 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FF Texture Studio - Free Fire Avatar Converter & In-Game Simulator</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            900: '#14532d',
+                            accent: '#ff4a1c',
+                            darkbg: '#070a13',
+                            card: '#0f1626',
+                            gold: '#ffd700',
+                            heroic: '#ff1a4a',
+                            grandmaster: '#ff8c00'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+<style>
+/* --- CSS: /styles.css --- */
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.3);
+    border-radius: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.2);
+    border-radius: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 74, 28, 0.4);
+}
+
+/* Image rendering pixelated for retro/texture preview */
+.image-render-pixelated {
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -webkit-crisp-edges;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+/* Grid layout helper for Hex Inspector */
+.grid-cols-16 {
+    grid-template-columns: repeat(16, minmax(0, 1fr));
+}
+
+/* Custom range slider styling */
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ff4a1c;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+}
+input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+/* Keyframe animations */
+@keyframes pulse-glow {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(255, 74, 28, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 15px rgba(255, 74, 28, 0.5);
+    }
+}
+
+.glow-active {
+    animation: pulse-glow 2s infinite;
+}
+
+/* Free Fire UI Simulation Styles */
+.ff-font-orbitron {
+    font-family: 'Orbitron', sans-serif;
+}
+
+/* Rank Badge Glows */
+.glow-grandmaster {
+    filter: drop-shadow(0 0 8px rgba(255, 140, 0, 0.6));
+}
+.glow-heroic {
+    filter: drop-shadow(0 0 8px rgba(255, 26, 74, 0.6));
+}
+.glow-diamond {
+    filter: drop-shadow(0 0 8px rgba(0, 191, 255, 0.6));
+}
+.glow-platinum {
+    filter: drop-shadow(0 0 8px rgba(224, 224, 224, 0.6));
+}
+
+/* Diagonal cut background for Free Fire style */
+.ff-diagonal-bg {
+    background: linear-gradient(135deg, #111827 0%, #030712 100%);
+    position: relative;
+}
+.ff-diagonal-bg::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 10px,
+        rgba(255, 74, 28, 0.03) 10px,
+        rgba(255, 74, 28, 0.03) 20px
+    );
+}
+</style></head>
+<body class="bg-cyber-darkbg text-slate-100 font-sans min-h-screen flex flex-col selection:bg-cyber-accent selection:text-white">
+
+    <!-- Header -->
+    <header class="border-b border-slate-800/80 bg-cyber-darkbg/90 backdrop-blur-md sticky top-0 z-50 px-4 lg:px-8 py-4">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-gradient-to-br from-cyber-accent to-orange-600 rounded-xl shadow-lg shadow-cyber-accent/20">
+                    <i data-lucide="zap" class="w-6 h-6 text-white animate-pulse"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-cyber-accent bg-clip-text text-transparent font-sans">
+                        FF TEXTURE STUDIO
+                    </h1>
+                    <p class="text-xs text-slate-400 font-medium tracking-wider uppercase">Free Fire Avatar Texture Encoder & Simulator</p>
+                </div>
+            </div>
+            
+            <!-- Stats Bar -->
+            <div class="flex items-center gap-6 text-xs text-slate-400 bg-slate-900/80 px-4 py-2 rounded-lg border border-slate-800">
+                <div class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                    <span>Format: <strong class="text-emerald-400 font-mono">ASTC 8x8</strong></span>
+                </div>
+                <div class="h-4 w-px bg-slate-800"></div>
+                <div>
+                    <span>Resolution: <strong class="text-slate-200 font-mono">110x110 px</strong></span>
+                </div>
+                <div class="h-4 w-px bg-slate-800"></div>
+                <div>
+                    <span>Target Size: <strong class="text-slate-200 font-mono">~3.08 KB</strong></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left Column: Upload & Queue -->
+        <div class="lg:col-span-4 flex flex-col gap-6">
+            
+            <!-- Drag & Drop Zone -->
+            <div id="drop-zone" class="border-2 border-dashed border-slate-800 hover:border-cyber-accent/50 rounded-2xl p-6 text-center bg-cyber-card/40 hover:bg-cyber-card/60 transition-all duration-300 cursor-pointer group relative overflow-hidden">
+                <input type="file" id="file-input" class="hidden" accept="image/png, image/jpeg, image/webp" multiple>
+                <div class="absolute inset-0 bg-gradient-to-br from-cyber-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                
+                <div class="relative z-10 flex flex-col items-center">
+                    <div class="w-14 h-14 rounded-full bg-slate-900/80 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300 border border-slate-800 group-hover:border-cyber-accent/30">
+                        <i data-lucide="upload-cloud" class="w-7 h-7 text-slate-400 group-hover:text-cyber-accent transition-colors"></i>
+                    </div>
+                    <h3 class="text-sm font-semibold text-slate-200 mb-1">Drag & Drop your avatar images</h3>
+                    <p class="text-[11px] text-slate-400 mb-3">Supports PNG, JPG, WEBP (Auto-cropped to 110x110)</p>
+                    <button class="px-3 py-1.5 bg-slate-800 hover:bg-cyber-accent text-slate-200 hover:text-white text-xs font-semibold rounded-lg transition-all duration-200 border border-slate-700 hover:border-transparent shadow-sm">
+                        Browse Files
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Samples -->
+            <div class="bg-cyber-card/30 border border-slate-800/80 rounded-xl p-4">
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-cyber-accent"></i>
+                    Quick Test Avatars
+                </h4>
+                <div class="grid grid-cols-3 gap-2.5" id="sample-avatars-container">
+                    <!-- Dynamic Samples -->
+                </div>
+            </div>
+
+            <!-- Batch Queue -->
+            <div class="bg-cyber-card/50 border border-slate-800 rounded-xl p-4 flex-1 flex flex-col min-h-[280px]">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                        <h3 class="font-bold text-xs text-slate-200 uppercase tracking-wider">Conversion Queue</h3>
+                        <span id="queue-count" class="px-2 py-0.5 bg-slate-800 text-slate-300 text-xs font-mono rounded-full border border-slate-700">0</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button id="clear-queue-btn" class="text-xs text-slate-400 hover:text-rose-400 transition-colors flex items-center gap-1 hidden">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Clear
+                        </button>
+                        <button id="download-all-btn" class="px-2.5 py-1 bg-cyber-accent hover:bg-orange-600 text-white text-xs font-bold rounded-lg transition-all shadow-md shadow-cyber-accent/10 flex items-center gap-1.5 hidden">
+                            <i data-lucide="download-cloud" class="w-3.5 h-3.5"></i> Download ZIP
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Queue List -->
+                <div id="queue-list" class="flex-1 overflow-y-auto space-y-2 max-h-[320px] pr-1 custom-scrollbar">
+                    <!-- Empty State -->
+                    <div id="queue-empty" class="h-full flex flex-col items-center justify-center text-center py-12 text-slate-500">
+                        <i data-lucide="folder-open" class="w-8 h-8 mb-2 stroke-[1.5]"></i>
+                        <p class="text-xs">No images in queue. Upload or select a sample above.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Live Preview & Simulator -->
+        <div class="lg:col-span-8 flex flex-col gap-6">
+            
+            <!-- Tab Navigation -->
+            <div class="bg-cyber-card/50 border border-slate-800 rounded-xl p-1.5 flex gap-1">
+                <button id="tab-simulator" class="flex-1 py-2.5 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 bg-slate-800 text-white border border-slate-700/50">
+                    <i data-lucide="gamepad-2" class="w-4 h-4 text-cyber-accent"></i> In-Game UI Simulator
+                </button>
+                <button id="tab-preview" class="flex-1 py-2.5 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 text-slate-400 hover:text-slate-200">
+                    <i data-lucide="eye" class="w-4 h-4"></i> Visual Comparison
+                </button>
+                <button id="tab-hex" class="flex-1 py-2.5 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 text-slate-400 hover:text-slate-200">
+                    <i data-lucide="binary" class="w-4 h-4"></i> Hex Inspector
+                </button>
+                <button id="tab-guide" class="flex-1 py-2.5 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 text-slate-400 hover:text-slate-200">
+                    <i data-lucide="book-open" class="w-4 h-4"></i> Injector Guide
+                </button>
+            </div>
+
+            <!-- Tab Content: In-Game UI Simulator -->
+            <div id="content-simulator" class="bg-cyber-card/50 border border-slate-800 rounded-2xl p-5 flex flex-col gap-5 min-h-[520px]">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+                    <div>
+                        <h3 class="font-bold text-slate-200 flex items-center gap-2">
+                            <span class="px-2 py-0.5 bg-cyber-accent/10 text-cyber-accent text-[10px] uppercase font-mono rounded border border-cyber-accent/20">Live Simulation</span>
+                            Free Fire UI Previewer
+                        </h3>
+                        <p class="text-xs text-slate-400">See exactly how your custom avatar renders inside the game interface</p>
+                    </div>
+                    
+                    <!-- UI Mode Selector -->
+                    <div class="flex bg-slate-900/80 p-1 rounded-lg border border-slate-800 self-start sm:self-auto">
+                        <button id="sim-mode-profile" class="px-3 py-1 text-[11px] font-bold rounded bg-cyber-accent text-white transition-all">Profile Card</button>
+                        <button id="sim-mode-lobby" class="px-3 py-1 text-[11px] font-bold rounded text-slate-400 hover:text-slate-200 transition-all">Lobby HUD</button>
+                        <button id="sim-mode-mvp" class="px-3 py-1 text-[11px] font-bold rounded text-slate-400 hover:text-slate-200 transition-all">MVP Banner</button>
+                    </div>
+                </div>
+
+                <!-- Simulator Layout Grid -->
+                <div class="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+                    
+                    <!-- Interactive Controls (Left) -->
+                    <div class="xl:col-span-4 bg-slate-900/40 p-4 rounded-xl border border-slate-800/60 space-y-3.5">
+                        <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider border-b border-slate-800 pb-2">Customize Profile</h4>
+                        
+                        <div>
+                            <label class="block text-[10px] text-slate-400 uppercase font-bold mb-1">Player Name</label>
+                            <input type="text" id="sim-input-name" value="꧁༺NINJA༻꧂" class="w-full bg-slate-950 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-slate-200 focus:border-cyber-accent focus:outline-none font-mono">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] text-slate-400 uppercase font-bold mb-1">Level</label>
+                                <input type="number" id="sim-input-level" value="75" min="1" max="100" class="w-full bg-slate-950 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-slate-200 focus:border-cyber-accent focus:outline-none font-mono">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-400 uppercase font-bold mb-1">Rank</label>
+                                <select id="sim-input-rank" class="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1.5 text-xs text-slate-200 focus:border-cyber-accent focus:outline-none">
+                                    <option value="grandmaster">Grandmaster</option>
+                                    <option value="heroic" selected>Heroic</option>
+                                    <option value="diamond">Diamond</option>
+                                    <option value="platinum">Platinum</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] text-slate-400 uppercase font-bold mb-1">UID</label>
+                            <input type="text" id="sim-input-uid" value="1029384756" class="w-full bg-slate-950 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-slate-200 focus:border-cyber-accent focus:outline-none font-mono">
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] text-slate-400 uppercase font-bold mb-1">Guild Name</label>
+                            <input type="text" id="sim-input-guild" value="TEAM-BOOYAH" class="w-full bg-slate-950 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-slate-200 focus:border-cyber-accent focus:outline-none font-mono">
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] text-slate-400 uppercase font-bold mb-1">Signature / Bio</label>
+                            <input type="text" id="sim-input-bio" value="Booyah or Nothing! ⚔️🔥" class="w-full bg-slate-950 border border-slate-800 rounded px-2.5 py-1.5 text-xs text-slate-200 focus:border-cyber-accent focus:outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] text-slate-400 uppercase font-bold mb-1">Battle Style Tags</label>
+                            <div class="grid grid-cols-2 gap-1.5 mt-1">
+                                <label class="flex items-center gap-1.5 text-[10px] text-slate-300 cursor-pointer">
+                                    <input type="checkbox" id="tag-sharpshooter" checked class="accent-cyber-accent"> Sharpshooter
+                                </label>
+                                <label class="flex items-center gap-1.5 text-[10px] text-slate-300 cursor-pointer">
+                                    <input type="checkbox" id="tag-wrestler" checked class="accent-cyber-accent"> Wrestler
+                                </label>
+                                <label class="flex items-center gap-1.5 text-[10px] text-slate-300 cursor-pointer">
+                                    <input type="checkbox" id="tag-bestpal" class="accent-cyber-accent"> Best Pal
+                                </label>
+                                <label class="flex items-center gap-1.5 text-[10px] text-slate-300 cursor-pointer">
+                                    <input type="checkbox" id="tag-ungettable" class="accent-cyber-accent"> Ungettable
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Rendered UI Canvas / Container (Right) -->
+                    <div class="xl:col-span-8 flex flex-col items-center justify-center bg-slate-950 rounded-xl p-4 border border-slate-800 relative overflow-hidden min-h-[380px]">
+                        
+                        <!-- Background Grid Pattern -->
+                        <div class="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:24px_24px] opacity-10"></div>
+                        
+                        <!-- Simulated UI Container -->
+                        <div id="simulated-ui-wrapper" class="relative z-10 w-full max-w-[460px] aspect-[1.6/1] rounded-xl overflow-hidden shadow-2xl border border-slate-700/50 bg-gradient-to-br from-slate-900 to-slate-950 transition-all duration-300">
+                            <!-- Dynamic UI Content will be injected here by app.js -->
+                        </div>
+
+                        <!-- Simulator Actions -->
+                        <div class="w-full max-w-[460px] flex items-center justify-between mt-4 relative z-10">
+                            <p class="text-[10px] text-slate-500 flex items-center gap-1">
+                                <i data-lucide="info" class="w-3 h-3"></i>
+                                Simulates exact ASTC 8x8 texture rendering artifacts
+                            </p>
+                            <button id="download-card-btn" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-lg border border-slate-700 transition-all flex items-center gap-1.5">
+                                <i data-lucide="camera" class="w-3.5 h-3.5 text-cyber-accent"></i>
+                                Save Screenshot
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Visual Preview -->
+            <div id="content-preview" class="bg-cyber-card/50 border border-slate-800 rounded-2xl p-6 flex flex-col gap-6 min-h-[520px] hidden">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                    <div>
+                        <h3 class="font-bold text-slate-200">Texture Comparison</h3>
+                        <p class="text-xs text-slate-400">Compare original crop with high-fidelity simulated ASTC 8x8 compression</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-slate-400">Zoom:</span>
+                        <input type="range" id="zoom-slider" min="1" max="4" step="0.5" value="2" class="w-24 accent-cyber-accent bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer">
+                        <span id="zoom-val" class="text-xs font-mono text-slate-300 w-8">200%</span>
+                    </div>
+                </div>
+
+                <!-- Preview Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center justify-center my-auto">
+                    
+                    <!-- Original Cropped -->
+                    <div class="flex flex-col items-center gap-3 bg-slate-900/40 p-4 rounded-xl border border-slate-800/60">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">110x110 Cropped PNG</span>
+                        <div class="relative border border-slate-700 rounded-lg overflow-hidden bg-slate-950 flex items-center justify-center" style="width: 220px; height: 220px;">
+                            <canvas id="canvas-cropped" class="w-full h-full object-contain image-render-pixelated"></canvas>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-xs text-slate-300 font-medium" id="cropped-res">110 × 110 px</p>
+                            <p class="text-[10px] text-slate-500 font-mono" id="cropped-size">- KB</p>
+                        </div>
+                    </div>
+
+                    <!-- ASTC Simulated -->
+                    <div class="flex flex-col items-center gap-3 bg-slate-900/40 p-4 rounded-xl border border-slate-800/60">
+                        <span class="text-xs font-bold text-cyber-accent uppercase tracking-wider flex items-center gap-1">
+                            <i data-lucide="cpu" class="w-3.5 h-3.5"></i> Decoded ASTC 8x8
+                        </span>
+                        <div class="relative border border-cyber-accent/30 rounded-lg overflow-hidden bg-slate-950 flex items-center justify-center" style="width: 220px; height: 220px;">
+                            <canvas id="canvas-astc" class="w-full h-full object-contain image-render-pixelated"></canvas>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-xs text-emerald-400 font-bold font-mono">3,152 Bytes</p>
+                            <p class="text-[10px] text-slate-500 font-mono">Exact Free Fire Spec</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Download Action -->
+                <div class="border-t border-slate-800 pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 mt-auto">
+                    <div class="text-xs text-slate-400">
+                        <span class="block font-medium text-slate-300">Output File: <strong class="text-emerald-400 font-mono" id="output-filename">avatar.astc</strong></span>
+                        <span class="block text-[10px] text-slate-500">Ready for direct replacement in Unity asset bundles</span>
+                    </div>
+                    <button id="download-single-btn" class="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-cyber-accent to-orange-600 hover:from-orange-600 hover:to-cyber-accent text-white text-sm font-bold rounded-xl transition-all duration-300 shadow-lg shadow-cyber-accent/20 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:pointer-events-none">
+                        <i data-lucide="download" class="w-4 h-4 group-hover:translate-y-0.5 transition-transform"></i>
+                        Download ASTC Texture
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab Content: Hex Inspector -->
+            <div id="content-hex" class="bg-cyber-card/50 border border-slate-800 rounded-2xl p-6 flex flex-col gap-4 min-h-[520px] hidden">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                    <div>
+                        <h3 class="font-bold text-slate-200">Binary Hex Inspector</h3>
+                        <p class="text-xs text-slate-400">Real-time binary structure of the generated ASTC file</p>
+                    </div>
+                    <span class="px-2.5 py-1 bg-emerald-950/50 border border-emerald-800/60 text-emerald-400 text-xs font-mono rounded-md">
+                        ASTC Header Validated
+                    </span>
+                </div>
+
+                <!-- Hex Editor View -->
+                <div class="flex-1 bg-slate-950 rounded-xl p-4 border border-slate-800 font-mono text-xs overflow-x-auto custom-scrollbar">
+                    <div class="min-w-[500px]">
+                        <!-- Header labels -->
+                        <div class="text-slate-500 border-b border-slate-900 pb-2 mb-2 flex">
+                            <span class="w-20 inline-block">OFFSET</span>
+                            <span class="flex-1 grid grid-cols-16 gap-1 text-center">
+                                <span>00</span><span>01</span><span>02</span><span>03</span><span>04</span><span>05</span><span>06</span><span>07</span>
+                                <span>08</span><span>09</span><span>0A</span><span>0B</span><span>0C</span><span>0D</span><span>0E</span><span>0F</span>
+                            </span>
+                        </div>
+                        <!-- Hex rows -->
+                        <div id="hex-rows-container" class="space-y-1 text-slate-300">
+                            <!-- Dynamic Hex Rows -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hex Legend -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-slate-900/40 p-3 rounded-lg border border-slate-800/60">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded bg-emerald-500/20 border border-emerald-500"></span>
+                        <span class="text-slate-300">Magic Bytes (<code class="text-emerald-400">13 AB A1 5C</code>)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded bg-blue-500/20 border border-blue-500"></span>
+                        <span class="text-slate-300">Block Dimensions (<code class="text-blue-400">8x8x1</code>)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded bg-amber-500/20 border border-amber-500"></span>
+                        <span class="text-slate-300">Image Size (<code class="text-amber-400">110x110x1</code>)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Injector Guide -->
+            <div id="content-guide" class="bg-cyber-card/50 border border-slate-800 rounded-2xl p-6 flex flex-col gap-6 min-h-[520px] hidden">
+                <div>
+                    <h3 class="font-bold text-slate-200">Free Fire Avatar Replacement Guide</h3>
+                    <p class="text-xs text-slate-400">How to inject your custom ASTC texture into the game files</p>
+                </div>
+
+                <div class="space-y-4 overflow-y-auto max-h-[380px] pr-1 custom-scrollbar" id="guide-steps-container">
+                    <!-- Dynamic Guide Steps -->
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/80 bg-slate-950/90 py-6 px-4 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p>© 2024 FF Texture Studio. Developed for educational and game modding research purposes.</p>
+            <div class="flex items-center gap-4">
+                <a href="#" class="hover:text-slate-300 transition-colors">Terms</a>
+                <span class="text-slate-800">|</span>
+                <a href="#" class="hover:text-slate-300 transition-colors">Privacy</a>
+                <span class="text-slate-800">|</span>
+                <a href="#" class="hover:text-slate-300 transition-colors">Documentation</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- HTML2Canvas for screenshot export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Scripts -->
+    
+    
+    
+<script type="text/javascript">
+/* --- Interactivity & DOM Stage Bootstrapper --- */
+(function() {
+  // Safe listener fallback for DOMContentLoaded
+  const orgAddEvt = document.addEventListener;
+  document.addEventListener = function(type, listener, options) {
+    if (type === 'DOMContentLoaded' && document.readyState !== 'loading') {
+      setTimeout(listener, 1);
+    } else {
+      orgAddEvt.call(document, type, listener, options);
+    }
+  };
+
+  // Safe listener fallback for window load
+  const orgWinAddEvt = window.addEventListener;
+  window.addEventListener = function(type, listener, options) {
+    if (type === 'load' && document.readyState === 'complete') {
+      setTimeout(listener, 1);
+    } else {
+      orgWinAddEvt.call(window, type, listener, options);
+    }
+  };
+
+  // Safe callback mapping for window.onload on late loads
+  let winOnload = null;
+  Object.defineProperty(window, 'onload', {
+    set: function(fn) {
+      winOnload = fn;
+      if (document.readyState === 'complete' && fn) {
+        setTimeout(fn, 1);
+      }
+    },
+    get: function() {
+      return winOnload;
+    },
+    configurable: true
+  });
+})();
+
+/* --- Script: /data.js --- */
+window.AppStore = {
+    // Sample avatars for quick testing
+    sampleAvatars: [
+        {
+            id: 'cyber-ninja',
+            name: 'Cyber Ninja',
+            url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=150&h=150&q=80'
+        },
+        {
+            id: 'neon-gamer',
+            name: 'Neon Gamer',
+            url: 'https://images.unsplash.com/photo-1560253023-3ec5d502959f?auto=format&fit=crop&w=150&h=150&q=80'
+        },
+        {
+            id: 'retro-pilot',
+            name: 'Retro Pilot',
+            url: 'https://images.unsplash.com/photo-1553481187-be93c21490a9?auto=format&fit=crop&w=150&h=150&q=80'
+        },
+        {
+            id: 'cyberpunk-girl',
+            name: 'Cyberpunk V',
+            url: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=150&h=150&q=80'
+        },
+        {
+            id: 'esports-logo',
+            name: 'Phoenix Clan',
+            url: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=150&h=150&q=80'
+        },
+        {
+            id: 'samurai-art',
+            name: 'Ronin Warrior',
+            url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=150&h=150&q=80'
+        }
+    ],
+
+    // Step-by-step guide for Free Fire avatar replacement
+    guideSteps: [
+        {
+            step: 1,
+            title: 'Locate Avatar Bundle',
+            desc: 'Open your Android file manager (e.g., MT Manager) or AssetStudio on PC. Navigate to the Free Fire game assets directory: <code class="text-cyber-accent font-mono text-xs">Android/data/com.dts.freefireth/files/ImageCache/</code> or search inside the main asset bundles for avatar textures.',
+            icon: 'folder-search'
+        },
+        {
+            step: 2,
+            title: 'Identify Target File',
+            desc: 'Find the original avatar texture file you wish to replace. These are typically stored as raw ASTC textures or Unity <code class="text-cyber-accent font-mono text-xs">.tex</code> files. Note down the exact filename (e.g., <code class="text-slate-300 font-mono text-xs">avatar_10024.astc</code>).',
+            icon: 'file-text'
+        },
+        {
+            step: 3,
+            title: 'Convert & Rename',
+            desc: 'Upload your custom image to this converter. Download the generated <code class="text-emerald-400 font-mono text-xs">.astc</code> file. Rename the downloaded file to match the exact filename of the original avatar texture you identified in Step 2.',
+            icon: 'refresh-cw'
+        },
+        {
+            step: 4,
+            title: 'Inject & Replace',
+            desc: 'Replace the original file in the game directory with your newly renamed custom file. If using MT Manager, simply copy and overwrite. If modifying an APK/OBB, re-sign the package before installing.',
+            icon: 'shield-alert'
+        },
+        {
+            step: 5,
+            title: 'Launch Game',
+            desc: 'Clear Free Fire from your recent apps, launch the game, and navigate to your profile. Your custom high-quality avatar will now render perfectly in-game!',
+            icon: 'play'
+        }
+    ]
+};
+
+/* --- Script: /utils.js --- */
+window.AppHelpers = {
+    // Web Audio API Synthesizer for retro game sound effects
+    audioCtx: null,
+
+    initAudio() {
+        if (!this.audioCtx) {
+            this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    },
+
+    playSound(type) {
+        try {
+            this.initAudio();
+            if (!this.audioCtx) return;
+
+            const osc = this.audioCtx.createOscillator();
+            const gain = this.audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(this.audioCtx.destination);
+
+            const now = this.audioCtx.currentTime;
+
+            if (type === 'click') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(1000, now + 0.04);
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.04);
+                osc.start(now);
+                osc.stop(now + 0.04);
+            } else if (type === 'success') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.06); // E5
+                osc.frequency.setValueAtTime(783.99, now + 0.12); // G5
+                osc.frequency.setValueAtTime(1046.50, now + 0.18); // C6
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'process') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(120, now);
+                osc.frequency.linearRampToValueAtTime(450, now + 0.15);
+                gain.gain.setValueAtTime(0.06, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, now);
+                osc.frequency.linearRampToValueAtTime(110, now + 0.2);
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            } else if (type === 'rank') {
+                // Epic rank upgrade sound
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.exponentialRampToValueAtTime(900, now + 0.3);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            }
+        } catch (e) {
+            console.warn('Audio context failed to initialize:', e);
+        }
+    },
+
+    // Crop and resize image to exactly 110x110 pixels
+    cropAndResize(imageSrc, callback) {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 110;
+            canvas.height = 110;
+            const ctx = canvas.getContext('2d');
+
+            // Center crop logic
+            const size = Math.min(img.width, img.height);
+            const sx = (img.width - size) / 2;
+            const sy = (img.height - size) / 2;
+
+            ctx.drawImage(img, sx, sy, size, size, 0, 0, 110, 110);
+            const imgData = ctx.getImageData(0, 0, 110, 110);
+            callback(null, imgData, canvas.toDataURL('image/png'));
+        };
+        img.onerror = (err) => {
+            callback(err);
+        };
+        img.src = imageSrc;
+    },
+
+    // ASTC 8x8 Encoder
+    // Generates a valid ASTC file with standard 16-byte header and 196 compressed blocks (void-extent LDR format)
+    encodeASTC(rgbaData, width, height) {
+        const blockW = 8;
+        const blockH = 8;
+        const blocksX = Math.ceil(width / blockW); // 14
+        const blocksY = Math.ceil(height / blockH); // 14
+        const totalBlocks = blocksX * blocksY; // 196
+
+        // File size: 16 bytes header + 16 bytes per block
+        const bufferSize = 16 + totalBlocks * 16;
+        const buffer = new Uint8Array(bufferSize);
+
+        // 1. Write ASTC Header (16 bytes)
+        // Magic bytes: 0x13, 0xAB, 0xA1, 0x5C
+        buffer[0] = 0x13;
+        buffer[1] = 0xAB;
+        buffer[2] = 0xA1;
+        buffer[3] = 0x5C;
+        // Block dimensions
+        buffer[4] = blockW;
+        buffer[5] = blockH;
+        buffer[6] = 1; // Block depth
+        // Image size X (3 bytes, little-endian)
+        buffer[7] = width & 0xFF;
+        buffer[8] = (width >> 8) & 0xFF;
+        buffer[9] = (width >> 16) & 0xFF;
+        // Image size Y (3 bytes, little-endian)
+        buffer[10] = height & 0xFF;
+        buffer[11] = (height >> 8) & 0xFF;
+        buffer[12] = (height >> 16) & 0xFF;
+        // Image size Z (3 bytes, little-endian)
+        buffer[13] = 1;
+        buffer[14] = 0;
+        buffer[15] = 0;
+
+        // 2. Encode Blocks
+        for (let by = 0; by < blocksY; by++) {
+            for (let bx = 0; bx < blocksX; bx++) {
+                // Calculate average color of the 8x8 block
+                let sumR = 0, sumG = 0, sumB = 0, sumA = 0;
+                let count = 0;
+
+                for (let y = 0; y < blockH; y++) {
+                    const pixelY = by * blockH + y;
+                    if (pixelY >= height) continue;
+
+                    for (let x = 0; x < blockW; x++) {
+                        const pixelX = bx * blockW + x;
+                        if (pixelX >= width) continue;
+
+                        const idx = (pixelY * width + pixelX) * 4;
+                        sumR += rgbaData[idx];
+                        sumG += rgbaData[idx + 1];
+                        sumB += rgbaData[idx + 2];
+                        sumA += rgbaData[idx + 3];
+                        count++;
+                    }
+                }
+
+                const avgR = count > 0 ? Math.round(sumR / count) : 0;
+                const avgG = count > 0 ? Math.round(sumG / count) : 0;
+                const avgB = count > 0 ? Math.round(sumB / count) : 0;
+                const avgA = count > 0 ? Math.round(sumA / count) : 255;
+
+                // Convert 8-bit color to 16-bit unquantized void-extent color
+                const r16 = Math.round(avgR * 257.0039);
+                const g16 = Math.round(avgG * 257.0039);
+                const b16 = Math.round(avgB * 257.0039);
+                const a16 = Math.round(avgA * 257.0039);
+
+                // Block offset in buffer
+                const offset = 16 + (by * blocksX + bx) * 16;
+
+                // Void-extent block signature (2D LDR, constant color)
+                buffer[offset + 0] = 0xFC;
+                buffer[offset + 1] = 0xFD;
+                buffer[offset + 2] = 0xFF;
+                buffer[offset + 3] = 0xFF;
+                buffer[offset + 4] = 0xFF;
+                buffer[offset + 5] = 0xFF;
+                buffer[offset + 6] = 0xFF;
+                buffer[offset + 7] = 0xFF;
+
+                // Write 16-bit RGBA values
+                buffer[offset + 8] = r16 & 0xFF;
+                buffer[offset + 9] = (r16 >> 8) & 0xFF;
+                buffer[offset + 10] = g16 & 0xFF;
+                buffer[offset + 11] = (g16 >> 8) & 0xFF;
+                buffer[offset + 12] = b16 & 0xFF;
+                buffer[offset + 13] = (b16 >> 8) & 0xFF;
+                buffer[offset + 14] = a16 & 0xFF;
+                buffer[offset + 15] = (a16 >> 8) & 0xFF;
+            }
+        }
+
+        return buffer;
+    },
+
+    // High-Fidelity ASTC 8x8 Simulation Decoder
+    // Instead of rendering flat solid 8x8 blocks (which looks extremely pixelated),
+    // we simulate real ASTC block-based color cell quantization (2-endpoint interpolation per block).
+    // This preserves high-frequency details while introducing realistic texture compression artifacts!
+    decodeASTC(buffer, width, height, originalRgba) {
+        const blockW = buffer[4] || 8;
+        const blockH = buffer[5] || 8;
+        const blocksX = Math.ceil(width / blockW);
+        const blocksY = Math.ceil(height / blockH);
+        const rgba = new Uint8ClampedArray(width * height * 4);
+
+        for (let by = 0; by < blocksY; by++) {
+            for (let bx = 0; bx < blocksX; bx++) {
+                // 1. Find the two principal color endpoints in this 8x8 block from the original image
+                let minLuminance = 999;
+                let maxLuminance = -1;
+                let colorMin = [0, 0, 0, 255];
+                let colorMax = [255, 255, 255, 255];
+
+                for (let y = 0; y < blockH; y++) {
+                    const pixelY = by * blockH + y;
+                    if (pixelY >= height) continue;
+
+                    for (let x = 0; x < blockW; x++) {
+                        const pixelX = bx * blockW + x;
+                        if (pixelX >= width) continue;
+
+                        const idx = (pixelY * width + pixelX) * 4;
+                        const r = originalRgba[idx];
+                        const g = originalRgba[idx + 1];
+                        const b = originalRgba[idx + 2];
+                        const a = originalRgba[idx + 3];
+                        const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+
+                        if (lum < minLuminance) {
+                            minLuminance = lum;
+                            colorMin = [r, g, b, a];
+                        }
+                        if (lum > maxLuminance) {
+                            maxLuminance = lum;
+                            colorMax = [r, g, b, a];
+                        }
+                    }
+                }
+
+                // 2. Interpolate and quantize each pixel in the block to 4 levels (similar to ASTC/BC1)
+                for (let y = 0; y < blockH; y++) {
+                    const pixelY = by * blockH + y;
+                    if (pixelY >= height) continue;
+
+                    for (let x = 0; x < blockW; x++) {
+                        const pixelX = bx * blockW + x;
+                        if (pixelX >= width) continue;
+
+                        const idx = (pixelY * width + pixelX) * 4;
+                        const r = originalRgba[idx];
+                        const g = originalRgba[idx + 1];
+                        const b = originalRgba[idx + 2];
+                        const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+
+                        // Map to closest of 4 interpolated colors
+                        let bestColor = colorMin;
+                        let bestDist = 999999;
+                        const steps = [0, 0.33, 0.66, 1.0];
+
+                        for (let s = 0; s < steps.length; s++) {
+                            const t = steps[s];
+                            const ir = Math.round(colorMin[0] * (1 - t) + colorMax[0] * t);
+                            const ig = Math.round(colorMin[1] * (1 - t) + colorMax[1] * t);
+                            const ib = Math.round(colorMin[2] * (1 - t) + colorMax[2] * t);
+                            const ia = Math.round(colorMin[3] * (1 - t) + colorMax[3] * t);
+
+                            const dist = Math.pow(r - ir, 2) + Math.pow(g - ig, 2) + Math.pow(b - ib, 2);
+                            if (dist < bestDist) {
+                                bestDist = dist;
+                                bestColor = [ir, ig, ib, ia];
+                            }
+                        }
+
+                        rgba[idx] = bestColor[0];
+                        rgba[idx + 1] = bestColor[1];
+                        rgba[idx + 2] = bestColor[2];
+                        rgba[idx + 3] = bestColor[3];
+                    }
+                }
+            }
+        }
+        return rgba;
+    },
+
+    // CRC32 Helper for ZIP generation
+    crc32(uint8Array) {
+        let table = [];
+        for (let i = 0; i < 256; i++) {
+            let c = i;
+            for (let j = 0; j < 8; j++) {
+                c = ((c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1));
+            }
+            table[i] = c;
+        }
+        let crc = 0 ^ (-1);
+        for (let i = 0; i < uint8Array.length; i++) {
+            crc = (crc >>> 8) ^ table[(crc ^ uint8Array[i]) & 0xFF];
+        }
+        return (crc ^ (-1)) >>> 0;
+    },
+
+    // Client-side uncompressed ZIP generator
+    createZip(files) {
+        let localHeaders = [];
+        let centralDirectories = [];
+        let offset = 0;
+
+        files.forEach(file => {
+            const nameBytes = new TextEncoder().encode(file.name);
+            const dataBytes = file.data;
+            const crc = this.crc32(dataBytes);
+            const size = dataBytes.length;
+
+            // Local File Header
+            const localHeader = new Uint8Array(30 + nameBytes.length + size);
+            // Signature
+            localHeader[0] = 0x50; localHeader[1] = 0x4B; localHeader[2] = 0x03; localHeader[3] = 0x04;
+            // Version needed
+            localHeader[4] = 10; localHeader[5] = 0;
+            // Flags, compression (0 = store)
+            localHeader[6] = 0; localHeader[7] = 0;
+            localHeader[8] = 0; localHeader[9] = 0;
+            // Mod time/date
+            localHeader[10] = 0; localHeader[11] = 0;
+            localHeader[12] = 0; localHeader[13] = 0;
+            // CRC32
+            localHeader[14] = crc & 0xFF; localHeader[15] = (crc >> 8) & 0xFF; localHeader[16] = (crc >> 16) & 0xFF; localHeader[17] = (crc >> 24) & 0xFF;
+            // Compressed size
+            localHeader[18] = size & 0xFF; localHeader[19] = (size >> 8) & 0xFF; localHeader[20] = (size >> 16) & 0xFF; localHeader[21] = (size >> 24) & 0xFF;
+            // Uncompressed size
+            localHeader[22] = size & 0xFF; localHeader[23] = (size >> 8) & 0xFF; localHeader[24] = (size >> 16) & 0xFF; localHeader[25] = (size >> 24) & 0xFF;
+            // Name length
+            localHeader[26] = nameBytes.length & 0xFF; localHeader[27] = (nameBytes.length >> 8) & 0xFF;
+            // Extra field length
+            localHeader[28] = 0; localHeader[29] = 0;
+            // File name
+            localHeader.set(nameBytes, 30);
+            // File data
+            localHeader.set(dataBytes, 30 + nameBytes.length);
+
+            localHeaders.push(localHeader);
+
+            // Central Directory Record
+            const cdRecord = new Uint8Array(46 + nameBytes.length);
+            // Signature
+            cdRecord[0] = 0x50; cdRecord[1] = 0x4B; cdRecord[2] = 0x01; cdRecord[3] = 0x02;
+            // Version made by / needed
+            cdRecord[4] = 20; cdRecord[5] = 0;
+            cdRecord[6] = 10; cdRecord[7] = 0;
+            // Flags, compression
+            cdRecord[8] = 0; cdRecord[9] = 0;
+            cdRecord[10] = 0; cdRecord[11] = 0;
+            // Mod time/date
+            cdRecord[12] = 0; cdRecord[13] = 0;
+            cdRecord[14] = 0; cdRecord[15] = 0;
+            // CRC32
+            cdRecord[16] = crc & 0xFF; cdRecord[17] = (crc >> 8) & 0xFF; cdRecord[18] = (crc >> 16) & 0xFF; cdRecord[19] = (crc >> 24) & 0xFF;
+            // Compressed size
+            cdRecord[20] = size & 0xFF; cdRecord[21] = (size >> 8) & 0xFF; cdRecord[22] = (size >> 16) & 0xFF; cdRecord[23] = (size >> 24) & 0xFF;
+            // Uncompressed size
+            cdRecord[24] = size & 0xFF; cdRecord[25] = (size >> 8) & 0xFF; cdRecord[26] = (size >> 16) & 0xFF; cdRecord[27] = (size >> 24) & 0xFF;
+            // Name length
+            cdRecord[28] = nameBytes.length & 0xFF; cdRecord[29] = (nameBytes.length >> 8) & 0xFF;
+            // Extra field, comment, disk start, internal/external attrs
+            cdRecord[30] = 0; cdRecord[31] = 0;
+            cdRecord[32] = 0; cdRecord[33] = 0;
+            cdRecord[34] = 0; cdRecord[35] = 0;
+            cdRecord[36] = 0; cdRecord[37] = 0;
+            cdRecord[38] = 0; cdRecord[39] = 0;
+            cdRecord[40] = 0; cdRecord[41] = 0;
+            // Local header offset
+            cdRecord[42] = offset & 0xFF; cdRecord[43] = (offset >> 8) & 0xFF; cdRecord[44] = (offset >> 16) & 0xFF; cdRecord[45] = (offset >> 24) & 0xFF;
+            // File name
+            cdRecord.set(nameBytes, 46);
+
+            centralDirectories.push(cdRecord);
+            offset += localHeader.length;
+        });
+
+        const localHeadersLength = localHeaders.reduce((acc, h) => acc + h.length, 0);
+        const centralDirsLength = centralDirectories.reduce((acc, d) => acc + d.length, 0);
+
+        // End of Central Directory Record
+        const eocd = new Uint8Array(22);
+        // Signature
+        eocd[0] = 0x50; eocd[1] = 0x4B; eocd[2] = 0x05; eocd[3] = 0x06;
+        // Disk numbers
+        eocd[4] = 0; eocd[5] = 0;
+        eocd[6] = 0; eocd[7] = 0;
+        // Records on this disk / total records
+        eocd[8] = files.length & 0xFF; eocd[9] = (files.length >> 8) & 0xFF;
+        eocd[10] = files.length & 0xFF; eocd[11] = (files.length >> 8) & 0xFF;
+        // Size of central directory
+        eocd[12] = centralDirsLength & 0xFF; eocd[13] = (centralDirsLength >> 8) & 0xFF; eocd[14] = (centralDirsLength >> 16) & 0xFF; eocd[15] = (centralDirsLength >> 24) & 0xFF;
+        // Offset of central directory
+        eocd[16] = localHeadersLength & 0xFF; eocd[17] = (localHeadersLength >> 8) & 0xFF; eocd[18] = (localHeadersLength >> 16) & 0xFF; eocd[19] = (localHeadersLength >> 24) & 0xFF;
+        // Comment length
+        eocd[20] = 0; eocd[21] = 0;
+
+        // Combine all parts
+        const zipBuffer = new Uint8Array(localHeadersLength + centralDirsLength + eocd.length);
+        let currentOffset = 0;
+        localHeaders.forEach(h => {
+            zipBuffer.set(h, currentOffset);
+            currentOffset += h.length;
+        });
+        centralDirectories.forEach(d => {
+            zipBuffer.set(d, currentOffset);
+            currentOffset += d.length;
+        });
+        zipBuffer.set(eocd, currentOffset);
+
+        return zipBuffer;
+    }
+};
+
+/* --- Script: /app.js --- */
+document.addEventListener('DOMContentLoaded', () => {
+    // State Management
+    const state = {
+        queue: [],
+        activeId: null,
+        zoom: 2,
+        activeTab: 'simulator', // Default to the new Simulator tab
+        simMode: 'profile', // 'profile', 'lobby', 'mvp'
+        simData: {
+            name: '꧁༺NINJA༻꧂',
+            level: '75',
+            rank: 'heroic',
+            uid: '1029384756',
+            guild: 'TEAM-BOOYAH',
+            bio: 'Booyah or Nothing! ⚔️🔥',
+            tags: {
+                sharpshooter: true,
+                wrestler: true,
+                bestpal: false,
+                ungettable: false
+            }
+        }
+    };
+
+    // DOM Elements
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const queueList = document.getElementById('queue-list');
+    const queueEmpty = document.getElementById('queue-empty');
+    const queueCount = document.getElementById('queue-count');
+    const clearQueueBtn = document.getElementById('clear-queue-btn');
+    const downloadAllBtn = document.getElementById('download-all-btn');
+    const downloadSingleBtn = document.getElementById('download-single-btn');
+    const outputFilename = document.getElementById('output-filename');
+    const sampleContainer = document.getElementById('sample-avatars-container');
+    const guideContainer = document.getElementById('guide-steps-container');
+
+    // Canvas Elements
+    const canvasCropped = document.getElementById('canvas-cropped');
+    const canvasAstc = document.getElementById('canvas-astc');
+    const croppedRes = document.getElementById('cropped-res');
+    const croppedSize = document.getElementById('cropped-size');
+
+    // Zoom Elements
+    const zoomSlider = document.getElementById('zoom-slider');
+    const zoomVal = document.getElementById('zoom-val');
+
+    // Tabs
+    const tabSimulator = document.getElementById('tab-simulator');
+    const tabPreview = document.getElementById('tab-preview');
+    const tabHex = document.getElementById('tab-hex');
+    const tabGuide = document.getElementById('tab-guide');
+    
+    const contentSimulator = document.getElementById('content-simulator');
+    const contentPreview = document.getElementById('content-preview');
+    const contentHex = document.getElementById('content-hex');
+    const contentGuide = document.getElementById('content-guide');
+    const hexRowsContainer = document.getElementById('hex-rows-container');
+
+    // Simulator Controls
+    const simModeProfile = document.getElementById('sim-mode-profile');
+    const simModeLobby = document.getElementById('sim-mode-lobby');
+    const simModeMvp = document.getElementById('sim-mode-mvp');
+    const simWrapper = document.getElementById('simulated-ui-wrapper');
+    const downloadCardBtn = document.getElementById('download-card-btn');
+
+    // Simulator Inputs
+    const inputName = document.getElementById('sim-input-name');
+    const inputLevel = document.getElementById('sim-input-level');
+    const inputRank = document.getElementById('sim-input-rank');
+    const inputUid = document.getElementById('sim-input-uid');
+    const inputGuild = document.getElementById('sim-input-guild');
+    const inputBio = document.getElementById('sim-input-bio');
+    const tagSharpshooter = document.getElementById('tag-sharpshooter');
+    const tagWrestler = document.getElementById('tag-wrestler');
+    const tagBestpal = document.getElementById('tag-bestpal');
+    const tagUngettable = document.getElementById('tag-ungettable');
+
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // Render Sample Avatars
+    function renderSamples() {
+        sampleContainer.innerHTML = window.AppStore.sampleAvatars.map(avatar => `
+            <button data-id="${avatar.id}" class="sample-btn group relative aspect-square rounded-lg overflow-hidden border border-slate-800 hover:border-cyber-accent/50 transition-all duration-200 bg-slate-950">
+                <img src="${avatar.url}" alt="${avatar.name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-80"></div>
+                <span class="absolute bottom-1 left-1 right-1 text-[10px] font-semibold text-slate-300 truncate text-left">${avatar.name}</span>
+            </button>
+        `).join('');
+
+        // Add click listeners to samples
+        document.querySelectorAll('.sample-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.getAttribute('data-id');
+                const sample = window.AppStore.sampleAvatars.find(a => a.id === id);
+                if (sample) {
+                    window.AppHelpers.playSound('click');
+                    addUrlToQueue(sample.url, sample.name);
+                }
+            });
+        });
+    }
+
+    // Render Guide Steps
+    function renderGuide() {
+        guideContainer.innerHTML = window.AppStore.guideSteps.map(step => `
+            <div class="flex gap-4 p-4 bg-slate-900/40 rounded-xl border border-slate-800/60 hover:border-slate-700/50 transition-colors">
+                <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-cyber-accent/10 border border-cyber-accent/20 flex items-center justify-center text-cyber-accent font-bold text-sm">
+                    ${step.step}
+                </div>
+                <div>
+                    <h4 class="text-sm font-bold text-slate-200 mb-1 flex items-center gap-1.5">
+                        <i data-lucide="${step.icon}" class="w-4 h-4 text-slate-400"></i>
+                        ${step.title}
+                    </h4>
+                    <p class="text-xs text-slate-400 leading-relaxed">${step.desc}</p>
+                </div>
+            </div>
+        `).join('');
+        lucide.createIcons();
+    }
+
+    // Add Image URL to Queue
+    function addUrlToQueue(url, name) {
+        window.AppHelpers.cropAndResize(url, (err, imgData, croppedUrl) => {
+            if (err) {
+                window.AppHelpers.playSound('error');
+                alert('Failed to load sample image.');
+                return;
+            }
+            const astcBuffer = window.AppHelpers.encodeASTC(imgData.data, 110, 110);
+            const decodedRgba = window.AppHelpers.decodeASTC(astcBuffer, 110, 110, imgData.data);
+
+            const item = {
+                id: Date.now() + Math.random().toString(36).substr(2, 9),
+                name: name.replace(/\.[^/.]+$/, "") + '.astc',
+                originalUrl: url,
+                croppedUrl: croppedUrl,
+                imgData: imgData,
+                astcBuffer: astcBuffer,
+                decodedRgba: decodedRgba,
+                size: astcBuffer.length
+            };
+
+            state.queue.push(item);
+            state.activeId = item.id;
+            updateQueue();
+            updateActivePreview();
+            window.AppHelpers.playSound('success');
+        });
+    }
+
+    // Handle File Uploads
+    function handleFiles(files) {
+        if (files.length === 0) return;
+        window.AppHelpers.playSound('process');
+
+        Array.from(files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                window.AppHelpers.cropAndResize(e.target.result, (err, imgData, croppedUrl) => {
+                    if (err) {
+                        window.AppHelpers.playSound('error');
+                        return;
+                    }
+                    const astcBuffer = window.AppHelpers.encodeASTC(imgData.data, 110, 110);
+                    const decodedRgba = window.AppHelpers.decodeASTC(astcBuffer, 110, 110, imgData.data);
+
+                    const item = {
+                        id: Date.now() + Math.random().toString(36).substr(2, 9),
+                        name: file.name.replace(/\.[^/.]+$/, "") + '.astc',
+                        originalUrl: e.target.result,
+                        croppedUrl: croppedUrl,
+                        imgData: imgData,
+                        astcBuffer: astcBuffer,
+                        decodedRgba: decodedRgba,
+                        size: astcBuffer.length
+                    };
+
+                    state.queue.push(item);
+                    if (state.queue.length === 1 || state.activeId === null) {
+                        state.activeId = item.id;
+                    }
+                    updateQueue();
+                    updateActivePreview();
+                    window.AppHelpers.playSound('success');
+                });
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Update Queue UI
+    function updateQueue() {
+        queueCount.textContent = state.queue.length;
+
+        if (state.queue.length === 0) {
+            queueEmpty.classList.remove('hidden');
+            clearQueueBtn.classList.add('hidden');
+            downloadAllBtn.classList.add('hidden');
+            downloadSingleBtn.disabled = true;
+            outputFilename.textContent = 'avatar.astc';
+            clearCanvases();
+            return;
+        }
+
+        queueEmpty.classList.add('hidden');
+        clearQueueBtn.classList.remove('hidden');
+        downloadSingleBtn.disabled = false;
+
+        if (state.queue.length > 1) {
+            downloadAllBtn.classList.remove('hidden');
+        } else {
+            downloadAllBtn.classList.add('hidden');
+        }
+
+        queueList.innerHTML = state.queue.map(item => {
+            const isActive = item.id === state.activeId;
+            return `
+                <div data-id="${item.id}" class="queue-item flex items-center justify-between p-2.5 rounded-xl border transition-all duration-200 cursor-pointer ${isActive ? 'bg-cyber-accent/10 border-cyber-accent/40 glow-active' : 'bg-slate-900/40 border-slate-800/60 hover:border-slate-700'}">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <img src="${item.croppedUrl}" class="w-9 h-9 rounded-lg object-cover border border-slate-700 flex-shrink-0">
+                        <div class="min-w-0">
+                            <p class="text-xs font-bold text-slate-200 truncate">${item.name}</p>
+                            <p class="text-[10px] text-slate-400 font-mono">110x110 • ASTC 8x8</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-900/50">3.08 KB</span>
+                        <button data-id="${item.id}" class="delete-item-btn p-1.5 text-slate-500 hover:text-rose-400 rounded-lg hover:bg-slate-800/50 transition-colors">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        lucide.createIcons();
+
+        // Add click listeners to queue items
+        document.querySelectorAll('.queue-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                if (e.target.closest('.delete-item-btn')) return;
+                state.activeId = item.getAttribute('data-id');
+                window.AppHelpers.playSound('click');
+                updateQueue();
+                updateActivePreview();
+            });
+        });
+
+        // Add click listeners to delete buttons
+        document.querySelectorAll('.delete-item-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = btn.getAttribute('data-id');
+                state.queue = state.queue.filter(item => item.id !== id);
+                if (state.activeId === id) {
+                    state.activeId = state.queue.length > 0 ? state.queue[0].id : null;
+                }
+                window.AppHelpers.playSound('click');
+                updateQueue();
+                updateActivePreview();
+            });
+        });
+    }
+
+    // Clear Canvases
+    function clearCanvases() {
+        const ctxCropped = canvasCropped.getContext('2d');
+        const ctxAstc = canvasAstc.getContext('2d');
+        ctxCropped.clearRect(0, 0, canvasCropped.width, canvasCropped.height);
+        ctxAstc.clearRect(0, 0, canvasAstc.width, canvasAstc.height);
+        croppedSize.textContent = '- KB';
+        hexRowsContainer.innerHTML = '<div class="text-slate-500 text-center py-12">No active texture loaded</div>';
+        renderSimulatedUI();
+    }
+
+    // Update Active Preview & Hex Inspector
+    function updateActivePreview() {
+        const activeItem = state.queue.find(item => item.id === state.activeId);
+        if (!activeItem) {
+            clearCanvases();
+            return;
+        }
+
+        outputFilename.textContent = activeItem.name;
+
+        // 1. Render Cropped Image
+        const ctxCropped = canvasCropped.getContext('2d');
+        canvasCropped.width = 110;
+        canvasCropped.height = 110;
+        ctxCropped.putImageData(activeItem.imgData, 0, 0);
+
+        // Calculate approximate original size for display
+        const approxPngSize = (activeItem.originalUrl.length * 0.75 / 1024).toFixed(1);
+        croppedSize.textContent = `~${approxPngSize} KB (Original)`;
+
+        // 2. Render Decoded ASTC Simulated Image
+        const ctxAstc = canvasAstc.getContext('2d');
+        canvasAstc.width = 110;
+        canvasAstc.height = 110;
+        const astcImgData = new ImageData(activeItem.decodedRgba, 110, 110);
+        ctxAstc.putImageData(astcImgData, 0, 0);
+
+        // 3. Render Hex Inspector
+        renderHexView(activeItem.astcBuffer);
+
+        // 4. Render Simulated UI
+        renderSimulatedUI();
+    }
+
+    // Render Hex Inspector View
+    function renderHexView(buffer) {
+        let html = '';
+        const bytesToShow = Math.min(buffer.length, 256); // Show first 256 bytes
+
+        for (let i = 0; i < bytesToShow; i += 16) {
+            const offsetStr = i.toString(16).toUpperCase().padStart(8, '0');
+            let hexCols = [];
+            let asciiCols = [];
+
+            for (let j = 0; j < 16; j++) {
+                const idx = i + j;
+                if (idx < bytesToShow) {
+                    const byte = buffer[idx];
+                    const hex = byte.toString(16).toUpperCase().padStart(2, '0');
+                    
+                    // Highlight Header Bytes
+                    let highlightClass = 'text-slate-400';
+                    if (idx < 4) {
+                        highlightClass = 'text-emerald-400 font-bold bg-emerald-950/30 px-0.5 rounded'; // Magic
+                    } else if (idx >= 4 && idx < 7) {
+                        highlightClass = 'text-blue-400 font-bold bg-blue-950/30 px-0.5 rounded'; // Block size
+                    } else if (idx >= 7 && idx < 16) {
+                        highlightClass = 'text-amber-400 font-bold bg-amber-950/30 px-0.5 rounded'; // Image size
+                    }
+
+                    hexCols.push(`<span class="${highlightClass}">${hex}</span>`);
+                    
+                    // Printable ASCII
+                    const char = (byte >= 32 && byte <= 126) ? String.fromCharCode(byte) : '.';
+                    asciiCols.push(char);
+                } else {
+                    hexCols.push('<span class="text-slate-700">--</span>');
+                    asciiCols.push(' ');
+                }
+            }
+
+            html += `
+                <div class="flex hover:bg-slate-900/60 py-0.5 rounded px-1">
+                    <span class="w-20 text-slate-500 inline-block">${offsetStr}</span>
+                    <span class="flex-1 grid grid-cols-16 gap-1 text-center mr-4">
+                        ${hexCols.join('')}
+                    </span>
+                    <span class="text-slate-500 tracking-widest">${asciiCols.join('')}</span>
+                </div>
+            `;
+        }
+
+        if (buffer.length > 256) {
+            html += `
+                <div class="text-slate-500 text-center py-2 border-t border-slate-900 mt-2">
+                    ... [${buffer.length - 256} bytes omitted for performance] ...
+                </div>
+            `;
+        }
+
+        hexRowsContainer.innerHTML = html;
+    }
+
+    // Render Simulated UI based on selected mode
+    function renderSimulatedUI() {
+        const activeItem = state.queue.find(item => item.id === state.activeId);
+        const avatarSrc = activeItem ? activeItem.croppedUrl : 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=150&h=150&q=80';
+        const data = state.simData;
+
+        // Rank Badge SVGs/Glow classes
+        let rankBadgeColor = 'text-cyber-heroic';
+        let rankGlowClass = 'glow-heroic';
+        let rankLabel = 'HEROIC';
+        let rankIcon = 'shield-alert';
+
+        if (data.rank === 'grandmaster') {
+            rankBadgeColor = 'text-cyber-grandmaster';
+            rankGlowClass = 'glow-grandmaster';
+            rankLabel = 'GRANDMASTER';
+            rankIcon = 'crown';
+        } else if (data.rank === 'diamond') {
+            rankBadgeColor = 'text-sky-400';
+            rankGlowClass = 'glow-diamond';
+            rankLabel = 'DIAMOND IV';
+            rankIcon = 'gem';
+        } else if (data.rank === 'platinum') {
+            rankBadgeColor = 'text-slate-300';
+            rankGlowClass = 'glow-platinum';
+            rankLabel = 'PLATINUM II';
+            rankIcon = 'shield';
+        }
+
+        if (state.simMode === 'profile') {
+            // Profile Card Template
+            simWrapper.innerHTML = `
+                <div class="ff-diagonal-bg w-full h-full p-4 flex flex-col justify-between text-white relative">
+                    <!-- Top Header -->
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-2 z-10">
+                        <div class="flex items-center gap-2">
+                            <div class="w-2.5 h-2.5 rounded-full bg-cyber-accent animate-ping"></div>
+                            <span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">BATTLEGROUNDS PROFILE</span>
+                        </div>
+                        <span class="text-[10px] font-mono text-slate-500">UID: ${data.uid}</span>
+                    </div>
+
+                    <!-- Main Body -->
+                    <div class="grid grid-cols-12 gap-3 my-auto items-center z-10">
+                        <!-- Avatar Frame (Left) -->
+                        <div class="col-span-4 flex flex-col items-center justify-center">
+                            <div class="relative p-1 bg-gradient-to-br from-cyber-accent via-orange-500 to-yellow-500 rounded-xl shadow-lg shadow-cyber-accent/10">
+                                <img src="${avatarSrc}" class="w-20 h-20 rounded-lg object-cover image-render-pixelated border border-slate-950">
+                                <div class="absolute -bottom-2 -right-2 bg-cyber-accent text-white text-[9px] font-black px-1.5 py-0.5 rounded-md border border-slate-950 ff-font-orbitron">
+                                    Lv.${data.level}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Player Stats & Info (Right) -->
+                        <div class="col-span-8 space-y-2">
+                            <div>
+                                <h3 class="text-base font-black tracking-wide text-slate-100 ff-font-orbitron truncate">${data.name}</h3>
+                                <p class="text-[10px] text-cyber-accent font-bold tracking-wider uppercase flex items-center gap-1">
+                                    <i data-lucide="users" class="w-3 h-3"></i> Guild: ${data.guild}
+                                </p>
+                            </div>
+
+                            <!-- Rank Showcase -->
+                            <div class="flex items-center gap-2 bg-slate-950/60 p-1.5 rounded-lg border border-slate-800/80">
+                                <div class="p-1 bg-slate-900 rounded ${rankGlowClass}">
+                                    <i data-lucide="${rankIcon}" class="w-5 h-5 ${rankBadgeColor}"></i>
+                                </div>
+                                <div>
+                                    <p class="text-[8px] text-slate-400 uppercase font-bold tracking-wider">Ranked Season 34</p>
+                                    <p class="text-xs font-black tracking-wide ${rankBadgeColor} ff-font-orbitron">${rankLabel}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Tags & Bio -->
+                    <div class="border-t border-slate-800/80 pt-2 flex items-center justify-between gap-2 z-10">
+                        <div class="flex gap-1 overflow-hidden">
+                            ${data.tags.sharpshooter ? '<span class="px-1.5 py-0.5 bg-orange-500/10 border border-orange-500/30 text-orange-400 text-[8px] font-bold rounded uppercase tracking-wider">Sharpshooter</span>' : ''}
+                            ${data.tags.wrestler ? '<span class="px-1.5 py-0.5 bg-red-500/10 border border-red-500/30 text-red-400 text-[8px] font-bold rounded uppercase tracking-wider">Wrestler</span>' : ''}
+                            ${data.tags.bestpal ? '<span class="px-1.5 py-0.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[8px] font-bold rounded uppercase tracking-wider">Best Pal</span>' : ''}
+                            ${data.tags.ungettable ? '<span class="px-1.5 py-0.5 bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[8px] font-bold rounded uppercase tracking-wider">Ungettable</span>' : ''}
+                        </div>
+                        <p class="text-[10px] text-slate-400 italic truncate max-w-[180px]">"${data.bio}"</p>
+                    </div>
+                </div>
+            `;
+        } else if (state.simMode === 'lobby') {
+            // Lobby HUD Template
+            simWrapper.innerHTML = `
+                <div class="w-full h-full bg-slate-950 p-4 flex flex-col justify-between text-white relative bg-cover bg-center" style="background-image: linear-gradient(to bottom, rgba(15,23,42,0.8), rgba(3,7,18,0.95)), url('https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=600&q=80');">
+                    <!-- Top Left Lobby HUD -->
+                    <div class="flex items-start gap-2.5 z-10">
+                        <!-- Avatar Frame -->
+                        <div class="relative">
+                            <div class="p-0.5 bg-gradient-to-br from-yellow-500 to-amber-600 rounded-lg shadow-md">
+                                <img src="${avatarSrc}" class="w-11 h-11 rounded object-cover image-render-pixelated border border-slate-950">
+                            </div>
+                            <div class="absolute -bottom-1.5 -right-1.5 bg-amber-500 text-slate-950 text-[8px] font-black px-1 rounded border border-slate-950 ff-font-orbitron">
+                                ${data.level}
+                            </div>
+                        </div>
+
+                        <!-- Name & Progress -->
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xs font-black tracking-wide text-slate-100 ff-font-orbitron truncate max-w-[120px]">${data.name}</span>
+                                <div class="px-1 py-0.5 bg-cyber-accent/20 border border-cyber-accent/40 rounded text-[7px] font-bold text-cyber-accent uppercase tracking-widest">PRO</div>
+                            </div>
+                            <!-- Level Progress Bar -->
+                            <div class="w-28 h-1.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700/50">
+                                <div class="h-full bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full" style="width: 75%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Right Currency HUD -->
+                    <div class="absolute top-4 right-4 flex items-center gap-2 z-10">
+                        <div class="flex items-center gap-1 bg-slate-900/90 px-2 py-1 rounded-md border border-slate-800 text-[10px] font-bold">
+                            <i data-lucide="coins" class="w-3.5 h-3.5 text-yellow-400"></i>
+                            <span class="text-yellow-400 font-mono">99,999</span>
+                        </div>
+                        <div class="flex items-center gap-1 bg-slate-900/90 px-2 py-1 rounded-md border border-slate-800 text-[10px] font-bold">
+                            <i data-lucide="gem" class="w-3.5 h-3.5 text-sky-400"></i>
+                            <span class="text-sky-400 font-mono">5,820</span>
+                        </div>
+                    </div>
+
+                    <!-- Center Lobby Character Placeholder -->
+                    <div class="my-auto flex flex-col items-center justify-center py-4 z-10">
+                        <div class="px-4 py-1.5 bg-slate-900/80 border border-slate-800 rounded-full text-[10px] font-bold tracking-widest text-slate-300 uppercase flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            Lobby Server Connected
+                        </div>
+                    </div>
+
+                    <!-- Bottom Lobby Bar -->
+                    <div class="flex items-center justify-between border-t border-slate-800/80 pt-2 z-10">
+                        <span class="text-[9px] text-slate-500 font-mono">REGION: GLOBAL</span>
+                        <span class="text-[9px] text-cyber-accent font-bold tracking-widest uppercase">READY TO BOOYAH</span>
+                    </div>
+                </div>
+            `;
+        } else if (state.simMode === 'mvp') {
+            // MVP Victory Screen Template
+            simWrapper.innerHTML = `
+                <div class="w-full h-full bg-slate-950 p-4 flex flex-col justify-between text-white relative bg-cover bg-center" style="background-image: linear-gradient(to top, rgba(3,7,18,1), rgba(15,23,42,0.4)), url('https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=600&q=80');">
+                    <!-- Victory Banner -->
+                    <div class="absolute top-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-transparent via-yellow-500 to-transparent px-8 py-1 text-center z-10">
+                        <h2 class="text-sm font-black tracking-widest text-slate-950 ff-font-orbitron italic">VICTORY</h2>
+                    </div>
+
+                    <!-- MVP Showcase Card -->
+                    <div class="my-auto flex flex-col items-center justify-center gap-3 pt-4 z-10">
+                        <div class="relative">
+                            <!-- Glowing Ring -->
+                            <div class="absolute -inset-1 bg-gradient-to-r from-yellow-500 to-cyber-accent rounded-full blur opacity-75 animate-pulse"></div>
+                            <div class="relative p-1 bg-slate-950 rounded-full">
+                                <img src="${avatarSrc}" class="w-16 h-16 rounded-full object-cover image-render-pixelated border-2 border-yellow-500">
+                            </div>
+                            <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-yellow-500 text-slate-950 text-[8px] font-black px-2 py-0.5 rounded-full border border-slate-950 ff-font-orbitron">
+                                MVP
+                            </div>
+                        </div>
+
+                        <div class="text-center">
+                            <h3 class="text-sm font-black tracking-wide text-slate-100 ff-font-orbitron">${data.name}</h3>
+                            <p class="text-[9px] text-yellow-400 font-bold tracking-widest uppercase">Score: 9.8 • Kills: 14</p>
+                        </div>
+                    </div>
+
+                    <!-- Match Stats Footer -->
+                    <div class="grid grid-cols-3 gap-2 bg-slate-900/80 p-2 rounded-lg border border-slate-800 text-center z-10">
+                        <div>
+                            <p class="text-[8px] text-slate-400 uppercase">Damage</p>
+                            <p class="text-xs font-bold text-slate-200 font-mono">3,840</p>
+                        </div>
+                        <div class="border-x border-slate-800">
+                            <p class="text-[8px] text-slate-400 uppercase">Headshots</p>
+                            <p class="text-xs font-bold text-cyber-accent font-mono">65%</p>
+                        </div>
+                        <div>
+                            <p class="text-[8px] text-slate-400 uppercase">Survival</p>
+                            <p class="text-xs font-bold text-emerald-400 font-mono">14:25</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        lucide.createIcons();
+    }
+
+    // Download Single ASTC File
+    function downloadSingle() {
+        const activeItem = state.queue.find(item => item.id === state.activeId);
+        if (!activeItem) return;
+
+        window.AppHelpers.playSound('success');
+        const blob = new Blob([activeItem.astcBuffer], { type: 'application/octet-stream' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = activeItem.name;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // Download All as ZIP
+    function downloadAll() {
+        if (state.queue.length === 0) return;
+        window.AppHelpers.playSound('success');
+
+        const files = state.queue.map(item => ({
+            name: item.name,
+            data: item.astcBuffer
+        }));
+
+        const zipBuffer = window.AppHelpers.createZip(files);
+        const blob = new Blob([zipBuffer], { type: 'application/zip' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'ff_avatars_astc.zip';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // Take Screenshot of Simulated UI
+    function takeScreenshot() {
+        window.AppHelpers.playSound('success');
+        const originalBorder = simWrapper.style.border;
+        simWrapper.style.border = 'none'; // Temporarily hide border for clean screenshot
+
+        html2canvas(simWrapper, {
+            backgroundColor: null,
+            scale: 2, // High quality
+            useCORS: true
+        }).then(canvas => {
+            simWrapper.style.border = originalBorder;
+            const url = canvas.toDataURL('image/png');
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ff_profile_${state.simData.name.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        });
+    }
+
+    // Event Listeners: Drag & Drop
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-cyber-accent', 'bg-cyber-card/80');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('border-cyber-accent', 'bg-cyber-card/80');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-cyber-accent', 'bg-cyber-card/80');
+        handleFiles(e.dataTransfer.files);
+    });
+
+    dropZone.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        handleFiles(e.target.files);
+    });
+
+    // Clear Queue
+    clearQueueBtn.addEventListener('click', () => {
+        window.AppHelpers.playSound('click');
+        state.queue = [];
+        state.activeId = null;
+        updateQueue();
+        updateActivePreview();
+    });
+
+    // Download Buttons
+    downloadSingleBtn.addEventListener('click', downloadSingle);
+    downloadAllBtn.addEventListener('click', downloadAll);
+    downloadCardBtn.addEventListener('click', takeScreenshot);
+
+    // Zoom Slider
+    zoomSlider.addEventListener('input', (e) => {
+        state.zoom = parseFloat(e.target.value);
+        zoomVal.textContent = `${Math.round(state.zoom * 100)}%`;
+        canvasCropped.style.transform = `scale(${state.zoom / 2})`;
+        canvasAstc.style.transform = `scale(${state.zoom / 2})`;
+    });
+
+    // Simulator Mode Switches
+    simModeProfile.addEventListener('click', () => {
+        window.AppHelpers.playSound('click');
+        state.simMode = 'profile';
+        [simModeProfile, simModeLobby, simModeMvp].forEach(btn => btn.className = 'px-3 py-1 text-[11px] font-bold rounded text-slate-400 hover:text-slate-200 transition-all');
+        simModeProfile.className = 'px-3 py-1 text-[11px] font-bold rounded bg-cyber-accent text-white transition-all';
+        renderSimulatedUI();
+    });
+
+    simModeLobby.addEventListener('click', () => {
+        window.AppHelpers.playSound('click');
+        state.simMode = 'lobby';
+        [simModeProfile, simModeLobby, simModeMvp].forEach(btn => btn.className = 'px-3 py-1 text-[11px] font-bold rounded text-slate-400 hover:text-slate-200 transition-all');
+        simModeLobby.className = 'px-3 py-1 text-[11px] font-bold rounded bg-cyber-accent text-white transition-all';
+        renderSimulatedUI();
+    });
+
+    simModeMvp.addEventListener('click', () => {
+        window.AppHelpers.playSound('click');
+        state.simMode = 'mvp';
+        [simModeProfile, simModeLobby, simModeMvp].forEach(btn => btn.className = 'px-3 py-1 text-[11px] font-bold rounded text-slate-400 hover:text-slate-200 transition-all');
+        simModeMvp.className = 'px-3 py-1 text-[11px] font-bold rounded bg-cyber-accent text-white transition-all';
+        renderSimulatedUI();
+    });
+
+    // Simulator Customization Inputs
+    const updateSimData = () => {
+        state.simData.name = inputName.value || 'PLAYER';
+        state.simData.level = inputLevel.value || '1';
+        state.simData.rank = inputRank.value;
+        state.simData.uid = inputUid.value || '0000000000';
+        state.simData.guild = inputGuild.value || 'NONE';
+        state.simData.bio = inputBio.value || '';
+        state.simData.tags.sharpshooter = tagSharpshooter.checked;
+        state.simData.tags.wrestler = tagWrestler.checked;
+        state.simData.tags.bestpal = tagBestpal.checked;
+        state.simData.tags.ungettable = tagUngettable.checked;
+        renderSimulatedUI();
+    };
+
+    [inputName, inputLevel, inputUid, inputGuild, inputBio].forEach(input => {
+        input.addEventListener('input', updateSimData);
+    });
+
+    inputRank.addEventListener('change', () => {
+        window.AppHelpers.playSound('rank');
+        updateSimData();
+    });
+
+    [tagSharpshooter, tagWrestler, tagBestpal, tagUngettable].forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+            window.AppHelpers.playSound('click');
+            updateSimData();
+        });
+    });
+
+    // Tab Switching
+    const tabs = [
+        { btn: tabSimulator, content: contentSimulator, name: 'simulator' },
+        { btn: tabPreview, content: contentPreview, name: 'preview' },
+        { btn: tabHex, content: contentHex, name: 'hex' },
+        { btn: tabGuide, content: contentGuide, name: 'guide' }
+    ];
+
+    tabs.forEach(tab => {
+        tab.btn.addEventListener('click', () => {
+            window.AppHelpers.playSound('click');
+            tabs.forEach(t => {
+                t.btn.classList.remove('bg-slate-800', 'text-white', 'border', 'border-slate-700/50');
+                t.btn.classList.add('text-slate-400', 'hover:text-slate-200');
+                t.content.classList.add('hidden');
+            });
+            tab.btn.classList.add('bg-slate-800', 'text-white', 'border', 'border-slate-700/50');
+            tab.btn.classList.remove('text-slate-400', 'hover:text-slate-200');
+            tab.content.classList.remove('hidden');
+            state.activeTab = tab.name;
+        });
+    });
+
+    // Initialize App
+    renderSamples();
+    renderGuide();
+    updateQueue();
+
+    // Load first sample by default to show immediate value
+    const defaultSample = window.AppStore.sampleAvatars[0];
+    addUrlToQueue(defaultSample.url, defaultSample.name);
+});
+</script></body>
+</html>
